@@ -4,7 +4,10 @@
 #
 # Including configuration
 #
-CONF=~/.config/$(basename $0 .sh).conf
+CONF=~/.config/usrmgmt.conf
+LOG=~/log/usrmgmt.log
+ROTATECONF=~/.config/logrotate.conf
+ROTATESTAT=~/.config/logrotate.stat
 
 if [ -f ${CONF} ]; then
  . ${CONF}
@@ -45,7 +48,6 @@ f_help () {
 #
 f_log () {
  echo "${DATE} ${MSG}" | /usr/bin/tee -a "${LOG}"
- /usr/bin/logger "${MSG}"
 }
 
 ###############################################################################
@@ -53,11 +55,9 @@ f_log () {
 # Log rotation
 #
 f_rotate () {
- local conf=~/.config/logrotate.conf
- local stat=~/.config/logrotate.stat
- [ -f $conf ] \
-  && /usr/sbin/logrotate -s $stat $conf \
-  || echo "Skipping log-rotation: $conf not found"
+ [ -f $ROTATECONF ] \
+  && /usr/sbin/logrotate -s $ROTATESTAT $ROTATECONF \
+  || echo "Skipping log-rotation: $ROTATECONF not found"
 }
 
 ###############################################################################
@@ -176,21 +176,3 @@ case $OPTION_ACTION in
  *)
   f_help
 esac
-
-
-# Examples
-#create_group delit Staff
-#create_luser delit Staff pass delitcn delitsn
-#rm_object "ou=delit" "ou=Staff"
-#rm_object "cn=delit" "ou=Staff"
-#rm_object "uid=delit" "ou=Staff"
-#rm_object "krbPrincipalName=timur@${REALM}" "cn=${REALM},cn=kerberos,ou=kdcroot"
-#create_ou delit "ou=Staff"
-#rename_ou delit removeit "ou=Staff"
-#ch_object_ou "uid=timur" "ou=delit,ou=Staff" "ou=Staff"
-#ch_object_ou "cn=del" "ou=delit,ou=Staff" "ou=Group"
-#ch_group_member add "cn=del" "ou=Group" timur
-#ch_group_member delete "cn=del" "ou=Group" timur
-#kerb_wrapper search $uid
-
-

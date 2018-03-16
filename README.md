@@ -12,5 +12,4 @@ PRINCOU="cn=${REALM},cn=kerberos,ou=kdcroot"
 LDAPURI="ldap://ldap.${REALM}"
 LDAPOUTPUT="/tmp/${RANDOM}"
 FUNC=/usr/local/bin/usrmgmt_functions.sh
-LOG=~/log/ldap_usrmgmt.log
 ```
