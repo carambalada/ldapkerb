@@ -19,9 +19,8 @@ UDATE=$(date -u "+%Y%m%d%H%M%SZ")
 # LDAP: Getting information about LDAP operation
 #
 set_msg_ldap () {
-
  if [ -f ${LDAPOUTPUT} ]; then
-  local msg_error="$(/bin/grep -iE '(result|modify):' ${LDAPOUTPUT} | tr -d '[:cntrl:]')"
+  local msg_error="$(/bin/grep -iE '(bind|search|result|modify):' ${LDAPOUTPUT} | tr -d '[:cntrl:]')"
   local msg_detail="$(/bin/grep -i 'info:' ${LDAPOUTPUT} | tr -d '[:cntrl:]')"
   #cat $LDAPOUTPUT
   if [ -n "${msg_detail}" ]; then
