@@ -19,18 +19,18 @@ UDATE=$(date -u "+%Y%m%d%H%M%SZ")
 # LDAP: Getting information about LDAP operation
 #
 set_msg_ldap () {
- if [ -f ${LDAPOUTPUT} ]; then
-  local msg_error="$(/bin/grep -iE '(bind|search|result|modify):' ${LDAPOUTPUT} | tr -d '[:cntrl:]')"
-  local msg_detail="$(/bin/grep -i 'info:' ${LDAPOUTPUT} | tr -d '[:cntrl:]')"
-  #cat $LDAPOUTPUT
+ local log=${1}
+ if [ -f "${log}" ]; then
+  local msg_error="$(/bin/grep -iE '(bind|search|result|modify):' "${log}" | tr -d '[:cntrl:]')"
+  local msg_detail="$(/bin/grep -i 'info:' "${log}" | tr -d '[:cntrl:]')"
+  #cat $log
   if [ -n "${msg_detail}" ]; then
    MSG="${msg_error}. ${msg_detail}"
   else
    MSG="${msg_error}"
   fi
-  /bin/rm -f "${LDAPOUTPUT}"
  else
-  MSG="Could not read file with LDAP output (${LDAPOUTPUT})"
+  MSG="Could not read file with LDAP output (${log})"
  fi
 }
 
@@ -43,6 +43,7 @@ ldap_wrapper () {
  local action=${1}
  local ldif=${2}
  local bin
+ local return_code
  case ${action} in
   mod)
    bin="/usr/bin/ldapmodify"
@@ -65,12 +66,10 @@ ldap_wrapper () {
  ${bin} ${OPTIONS} &>"${LDAPOUTPUT}"<<-EOT
 $ldif
 EOT
- if [ $? -eq 0 ]; then
-  return 0
- else
-  set_msg_ldap
- fi
- return 1
+ return_code=${?}
+ [ ${return_code} -eq 0 ] || set_msg_ldap "${LDAPOUTPUT}"
+ /bin/rm -f "${LDAPOUTPUT}"
+ return ${return_code}
 }
 
 ###############################################################################
@@ -83,13 +82,15 @@ ldap_pass () {
  local ou=${2:+",${2}"}
  local newpass=${3}
  local oldpass=${4}
+ local return_code
  if [ -n "${oldpass}" ]; then
   newpass="${newpass} -a ${oldpass}"
  fi
  /usr/bin/ldappasswd $OPTIONS -s ${newpass} ${id}${ou},${DC} &> "${LDAPOUTPUT}"
- local result=${?}
- [ ${result} -eq 0 ] || set_msg_ldap
- return ${result}
+ return_code=${?}
+ [ ${return_code} -eq 0 ] || set_msg_ldap "${LDAPOUTPUT}"
+ /bin/rm -f "${LDAPOUTPUT}"
+ return ${return_code}
 }
 
 ###############################################################################
